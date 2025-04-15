@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import MarianMTModel, MarianTokenizer, AdamW
+from transformers import MarianMTModel, MarianTokenizer
+from torch.optim import AdamW
 from tqdm import tqdm
 
 

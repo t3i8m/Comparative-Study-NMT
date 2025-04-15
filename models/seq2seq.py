@@ -2,31 +2,56 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchtext.datasets import Multi30k
-from torchtext.legacy.data import Field, BucketIterator
-import spacy
+from torchtext.data.utils import get_tokenizer
+from torchtext.vocab import build_vocab_from_iterator
+from torch.utils.data import DataLoader
 import random
 from torch.utils.tensorboard import SummaryWriter
 
-# Load spacy tokenizers
-spacy_ger = spacy.load("de_core_news_sm")
-spacy_eng = spacy.load("en_core_web_sm")
+spacy_ger = get_tokenizer("spacy", language="de_core_news_sm")
+spacy_eng = get_tokenizer("spacy", language="en_core_web_sm")
 
-def tokenizer_ger(text):
-    return [tok.text for tok in spacy_ger.tokenizer(text)]
+# Vocabulary building
+def yield_tokens(data_iter, tokenizer):
+    for src, tgt in data_iter:
+        yield tokenizer(src)
+        yield tokenizer(tgt)
 
-def tokenizer_eng(text):
-    return [tok.text for tok in spacy_eng.tokenizer(text)]
+train_iter = Multi30k(split='train', language_pair=('de', 'en'))
 
-# Define source and target language fields
-german = Field(tokenize=tokenizer_ger, lower=True, init_token='<sos>', eos_token='<eos>')
-english = Field(tokenize=tokenizer_eng, lower=True, init_token='<sos>', eos_token='<eos>')
+german_vocab = build_vocab_from_iterator(yield_tokens(train_iter, spacy_ger), specials=["<unk>", "<pad>", "<sos>", "<eos>"])
+english_vocab = build_vocab_from_iterator(yield_tokens(train_iter, spacy_eng), specials=["<unk>", "<pad>", "<sos>", "<eos>"])
+german_vocab.set_default_index(german_vocab["<unk>"])
+english_vocab.set_default_index(english_vocab["<unk>"])
 
-# Load dataset
-train_data, validation_data, test_data = Multi30k.splits(exts=('.de', '.en'), fields=(german, english))
+# Custom transform functions
+def vocab_transform(vocab, tokens):
+    return [vocab[token] for token in tokens]
 
-# Build vocab
-german.build_vocab(train_data, max_size=10000, min_freq=2)
-english.build_vocab(train_data, max_size=10000, min_freq=2)
+def to_tensor(indices, padding_value):
+    return torch.tensor(indices, dtype=torch.long)
+
+# Transforms
+def german_transform(tokens):
+    indices = vocab_transform(german_vocab, tokens)
+    return to_tensor(indices, padding_value=german_vocab["<pad>"])
+
+def english_transform(tokens):
+    indices = vocab_transform(english_vocab, tokens)
+    return to_tensor(indices, padding_value=english_vocab["<pad>"])
+
+# DataLoader
+def collate_fn(batch):
+    src_batch, tgt_batch = [], []
+    for src_sample, tgt_sample in batch:
+        src_batch.append(german_transform([f"<sos>"] + spacy_ger(src_sample) + [f"<eos>"]))
+        tgt_batch.append(english_transform([f"<sos>"] + spacy_eng(tgt_sample) + [f"<eos>"]))
+    src_batch = nn.utils.rnn.pad_sequence(src_batch, padding_value=german_vocab["<pad>"])
+    tgt_batch = nn.utils.rnn.pad_sequence(tgt_batch, padding_value=english_vocab["<pad>"])
+    return src_batch, tgt_batch
+
+train_iter = Multi30k(split='train', language_pair=('de', 'en'))
+train_loader = DataLoader(list(train_iter), batch_size=64, collate_fn=collate_fn)
 
 # Encoder
 class Encoder(nn.Module):
@@ -71,7 +96,7 @@ class Seq2Seq(nn.Module):
     def forward(self, source, target, teacher_force_ratio=0.5):
         batch_size = source.shape[1]
         target_len = target.shape[0]
-        target_vocab_size = len(english.vocab)
+        target_vocab_size = len(english_vocab)
 
         outputs = torch.zeros(target_len, batch_size, target_vocab_size).to(device)
         hidden, cell = self.encoder(source)
@@ -101,9 +126,9 @@ learning_rate = 0.001
 batch_size = 64
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-input_size_encoder = len(german.vocab)
-input_size_decoder = len(english.vocab)
-output_size = len(english.vocab)
+input_size_encoder = len(german_vocab)
+input_size_decoder = len(english_vocab)
+output_size = len(english_vocab)
 encoder_embedding_size = 300
 decoder_embedding_size = 300
 hidden_size = 1024
@@ -115,28 +140,14 @@ dec_dropout = 0.5
 writer = SummaryWriter(f"runs/loss_plot")
 step = 0
 
-# Data iterators
-train_iterator, valid_iterator, test_iterator = BucketIterator.splits(
-    (train_data, validation_data, test_data),
-    batch_size=batch_size,
-    sort_within_batch=True,
-    sort_key=lambda x: len(x.src),
-    device=device
-)
-
 # Model
 encoder_net = Encoder(input_size_encoder, encoder_embedding_size, hidden_size, num_layers, enc_dropout).to(device)
 decoder_net = Decoder(input_size_decoder, decoder_embedding_size, hidden_size, output_size, num_layers, dec_dropout).to(device)
 model = Seq2Seq(encoder_net, decoder_net).to(device)
 
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-pad_idx = english.vocab.stoi["<pad>"]
+pad_idx = english_vocab["<pad>"]
 criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)
-
-# Optionally load model
-load_model = False
-if load_model:
-    load_checkpoint(torch.load("my_checkpoint.pth.tar"), model, optimizer)
 
 # Training loop
 for epoch in range(num_epochs):
@@ -146,9 +157,9 @@ for epoch in range(num_epochs):
     save_checkpoint(checkpoint)
 
     model.train()
-    for batch_idx, batch in enumerate(train_iterator):
-        inp_data = batch.src.to(device)
-        target = batch.trg.to(device)
+    for batch_idx, (inp_data, target) in enumerate(train_loader):
+        inp_data = inp_data.to(device)
+        target = target.to(device)
 
         output = model(inp_data, target)
 
