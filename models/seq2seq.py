@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 import random
 from torch.utils.tensorboard import SummaryWriter
 
+# Tokenizers
 spacy_ger = get_tokenizer("spacy", language="de_core_news_sm")
 spacy_eng = get_tokenizer("spacy", language="en_core_web_sm")
 
@@ -18,6 +19,7 @@ def yield_tokens(data_iter, tokenizer):
         yield tokenizer(tgt)
 
 train_iter = Multi30k(split='train', language_pair=('de', 'en'))
+
 
 german_vocab = build_vocab_from_iterator(yield_tokens(train_iter, spacy_ger), specials=["<unk>", "<pad>", "<sos>", "<eos>"])
 english_vocab = build_vocab_from_iterator(yield_tokens(train_iter, spacy_eng), specials=["<unk>", "<pad>", "<sos>", "<eos>"])
