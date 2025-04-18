@@ -1,6 +1,7 @@
 from transformers import MarianMTModel, MarianTokenizer
+from models import TranslatorInterface
 
-class MarianMt():
+class MarianMt(TranslatorInterface):
 
     def __init__(self, model_name):
         # "Helsinki-NLP/opus-mt-en-de"
