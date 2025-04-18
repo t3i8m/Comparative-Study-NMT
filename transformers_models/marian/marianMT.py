@@ -23,6 +23,18 @@ class MarianMt(TranslatorInterface):
         translated_tokens = self.model.generate(**inputs)
         translations = [self.tokenizer.decode(t, skip_special_tokens=True) for t in translated_tokens]
         return translations
+
+    def batch_translate(self, texts:list, batch_size=32)->(list):
+        translations = []
+
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i:i + batch_size]
+            inputs = self.tokenizer(batch, return_tensors="pt", padding=True, truncation=True)
+            outputs = self.model.generate(**inputs)
+            batch_translations = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            translations.extend(batch_translations)
+
+        return translations
     
 
 
