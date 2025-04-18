@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from transformer_models.marian.marianMT import MarianMt
+from transformers_models.marian.marianMT import MarianMt
 
 def retrieve_data(filenames):
 
