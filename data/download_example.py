@@ -1,4 +1,4 @@
-from data.Downloader import Downloader
+from Downloader import Downloader
 
 downloader = Downloader()
 
