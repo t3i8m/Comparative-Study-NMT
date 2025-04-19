@@ -1,0 +1,7 @@
+# Ignore downloaded dataset files
+data/test.en
+data/test.de
+data/train.en
+data/train.de
+data/validation.en
+data/validation.de
