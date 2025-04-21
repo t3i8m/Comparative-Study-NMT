@@ -19,11 +19,11 @@ class MarianMt(TranslatorInterface):
         return self.model
     
     def get_tokenizer(self)->(MarianTokenizer):
-        """Return the tokenizer used for this model"""
+        """ Return the tokenizer used for this model"""
         return self.tokenizer
 
     def translate_text(self, texts:str)->(list):
-        """Translate a single string or a list of strings"""
+        """ Translate a single string or a list of strings"""
         if isinstance(texts, str):
             texts = [texts]
         
@@ -33,7 +33,7 @@ class MarianMt(TranslatorInterface):
         return translations
 
     def batch_translate(self, texts:list, batch_size=32)->(list):
-        """Translate a list of texts in batches to improve performance on large datasets"""
+        """ Translate a list of texts in batches to improve performance on large datasets"""
         translations = []
         for i in tqdm(range(0, len(texts), batch_size), desc="Translating"):
             batch = texts[i:i + batch_size]
@@ -44,5 +44,12 @@ class MarianMt(TranslatorInterface):
             print(f"Batch {i // batch_size + 1} / {len(texts) // batch_size + 1}")
         return translations
     
+    def tokenize_str(self, text)->(dict):
+        """ Tokenizes a single string or list of strings using the model's tokenizer."""
+        if isinstance(text, str):
+            text = [text]
+
+        return self.tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length = 128)
+
 
 
