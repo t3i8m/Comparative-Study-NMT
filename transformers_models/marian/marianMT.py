@@ -9,7 +9,7 @@ class MarianMt(TranslatorInterface):
 
     def __init__(self, model_name):
         """Initialize the model and tokenizer with the specified model name"""
-        # "Helsinki-NLP/opus-mt-en-de"
+        # "Helsinki-NLP/opus-mt-en-de" - baseline
         self.model_name = model_name
         self.tokenizer = MarianTokenizer.from_pretrained(self.model_name)
         self.model = MarianMTModel.from_pretrained(self.model_name)
