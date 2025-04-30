@@ -35,6 +35,7 @@ class MarianMt(TranslatorInterface):
     def batch_translate(self, texts:list, batch_size=32)->(list):
         """ Translate a list of texts in batches to improve performance on large datasets"""
         translations = []
+        
         for i in tqdm(range(0, len(texts), batch_size), desc="Translating"):
             batch = texts[i:i + batch_size]
             inputs = self.tokenizer(batch, return_tensors="pt", padding=True, truncation=True)
