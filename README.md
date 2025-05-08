@@ -12,12 +12,11 @@ This version is not a full production system — it's focused on getting core co
 - [x] Basic Seq2Seq model
 - [x] MarianMT model from Hugging Face Transformers
 - [x] Tokenization and training pipeline
-- [x] Docker support for isolated environment (almost)
+- [ ] - [x] Add more models (e.g., M2M100, MarianMT)\
+- [ ] - [x] Add evaluation metrics (BLEU, etc.)
+- [ ] - [x] Train on larger datasets (WMT14)
 
 ## 🚧 In Progress / Next Steps
 
-- Add more models (e.g., M2M100, Transformer from scratch)
-- Add evaluation metrics (BLEU, etc.)
-- Train on larger datasets (WMT14)
-- Add logging and monitoring
+- train on noisy dataset
 
