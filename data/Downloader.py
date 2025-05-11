@@ -1,6 +1,5 @@
 import gdown
 
-
 class Downloader():
 
     def __init__(self):
