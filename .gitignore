@@ -6,3 +6,4 @@ data/train.de
 data/validation.en
 data/validation.de
 /transformers_models/marian/marian-finetuned-en2de
+.venv/
