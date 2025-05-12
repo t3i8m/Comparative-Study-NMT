@@ -1,14 +1,17 @@
+import os
+import sys
 import nltk
 import evaluate
 from nltk.translate.bleu_score import corpus_bleu
 
+sys.path.append("C:/Users/Cecilia/Desktop/project 2-2/Translator_NLP_project")
+
 from transformers_models.M2M100.m2m100 import M2M100Model
 from transformers_models.marian.marianMT import MarianMt
-import os
-import sys
 from tqdm import tqdm
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+
 
 def retrieve_data(filenames):
     english_cleaned = []
