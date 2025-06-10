@@ -25,7 +25,7 @@ The primary goal is to analyze translation accuracy, robustness to noisy input, 
 
 The repository is organized into modules for data handling, model implementation, and experimentation.
 ```
-TRANSLATOR_NLP_PROJECT/
+Comparative-Study-NMT/
 ├── data/                       # Scripts for downloading the WMT14 dataset
 │   ├── Downloader.py
 │   └── ...
