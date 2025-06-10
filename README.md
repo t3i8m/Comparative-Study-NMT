@@ -49,7 +49,6 @@ Comparative-Study-NMT/
 │       └── M2M100/
 │           └── m2m100.py
 ├── .gitignore
-├── Dockerfile                  # Docker configuration for containerization
 ├── README.md                   # You are here!
 └── requirements.txt            # Python package dependencies
 ```
