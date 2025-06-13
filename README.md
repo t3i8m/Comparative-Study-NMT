@@ -4,6 +4,8 @@ This project provides a comprehensive framework for comparing the performance of
 
 The primary goal is to analyze translation accuracy, robustness to noisy input, and the impact of fine-tuning strategies on the WMT14 English-German dataset.
 
+Paper - https://drive.google.com/file/d/14VzlbmfQoo-pIUjypOm7-MfrPxCfmzsh/view?usp=sharing
+
 ## 🌟 Key Features
 
 *   **Model Implementations**:
